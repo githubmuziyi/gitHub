@@ -1,0 +1,30 @@
+<?php
+
+/**
+ * 获取站长工具上指定域名的网站排名
+ * @param  [查询的域名]
+ * @return [网站排名（int）]
+ */
+function pagerank($domain_origin)
+{
+    $pagerank = 0;
+    if (!preg_match('/http/', $domain_origin)) {
+        $domain_origin = 'http://' . $domain_origin;    
+    }
+    $parse_domain = parse_url($domain_origin);
+    if (isset($parse_domain['host'])) {
+        $domain = trim($parse_domain['host'], '/');
+    }
+    if (isset($domain) && $domain) {
+        $url_params['domain'] = $domain;
+        //获取的结果类型有两种(images/text),分别为图片和文本类型
+        $url_params['style'] = 'text';
+        $baidurank_url = 'http://baidurank.aizhan.com/api/br?' . http_build_query($url_params);
+        $baidurank_result = file_get_contents("$baidurank_url");
+        $baidurank_result && preg_match('/>(\d+)</', $baidurank_result, $match);
+        if (isset($match) && $match) {
+            $pagerank = $match[1];
+        }
+    }
+    return (int) $pagerank;
+}
